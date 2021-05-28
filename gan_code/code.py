@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import os
 from os import listdir
@@ -301,7 +301,7 @@ def generate_fake_samples(g_model, samples, patch_shape):
 # Save model progress
 #####################################################
 def summarize_performance(step, g_model, timestamp_string):
-	root_save_path = f'{cwd}\\{timestamp_string}'
+	root_save_path = to_os_comp_path(f'{cwd}\\{timestamp_string}')
 	if not os.path.exists(root_save_path):
 		os.makedirs(root_save_path)
 	
@@ -408,27 +408,27 @@ def execute_training(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch
 
 ######################################################
 try:
-	input_image_path = sys.argv[1]
-    
-    # Compress to numpy zip
-	compress_to_zip(input_image_path, f'{cwd}\\images.npz', f'{cwd}\\contours.npz')
-	
-    # Load images
-	dataset = load_real_samples(f'{cwd}\\images.npz', f'{cwd}\\contours.npz')
-	print('Loaded', dataset[0].shape, dataset[1].shape)
-	
-	image_shape = dataset[0].shape[1:]
-    # Discriminator and generator models
-	discriminator_model = get_discriminator(image_shape)
-	generator_model = get_generator(image_shape)
+    input_image_path = sys.argv[1]
 
-	# GAN model
-	gan_model = get_gan(generator_model, discriminator_model, image_shape)
+    numpy_image_path = to_os_comp_path(f'{cwd}\\images.npz')
+    numpy_contour_path = to_os_comp_path(f'{cwd}\\contours.npz')
+
+    compress_to_zip(input_image_path, numpy_image_path, numpy_contour_path)
+
+    dataset = load_real_samples(numpy_image_path, numpy_contour_path)
+    print('Loaded', dataset[0].shape, dataset[1].shape)
+
+    image_shape = dataset[0].shape[1:]
+
+    # Discriminator and generator models
+    discriminator_model = get_discriminator(image_shape)
+    generator_model = get_generator(image_shape)
+
+    # GAN model
+    gan_model = get_gan(generator_model, discriminator_model, image_shape)
 
     # Train 
-	execute_training(discriminator_model, generator_model, gan_model, dataset)
+    execute_training(discriminator_model, generator_model, gan_model, dataset)
 except Exception as e:
 	print("Unexpected error:", str(e))
-	input("Press any key!")
-
-input("Press any key!")
+	input("Press any key to continue!")
